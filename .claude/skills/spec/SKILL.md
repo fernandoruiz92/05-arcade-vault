@@ -24,7 +24,7 @@ Read `template.md` (in the same directory as this skill) to see the full structu
 
 Before asking questions about the feature, make sure you have project context:
 
-1. Read the project-memory file, if one exists. Try in order and stop at the first hit: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `README.md`. This adapts the skill to whichever agent is running it (Claude Code, Codex, Gemini CLI, etc.).
+1. Read `CLAUDE.md` if it exists.
 2. List the contents of `specs/` to see which specs already exist and how they are numbered.
 3. If previous specs exist, read at least the two most recent ones to pick up the project's conventions.
 
@@ -99,28 +99,14 @@ When all sections are confirmed:
 3. Ask the user whether the proposed file name works for them before writing it.
 4. Create the file at `specs/NN-slug.md` with all approved sections.
 5. Mark the state as `Draft` by default. **Do not mark it as `Approved` automatically** — the user does that once they have re-read it.
-6. **Seed the config file if it does not exist.** Check for `specs/.spec-config.yml`. If it is **missing**, create it with the default content below. If it **already exists, leave it untouched** — never overwrite the user's settings.
-
-   ```yaml
-   # spec workflow configuration
-   #
-   # AutoCreateBranch — controls whether /spec-impl creates the git branch automatically.
-   #   true  (default) → /spec-impl creates and switches to spec-NN-slug without asking
-   #   false           → /spec-impl asks for [y/N] confirmation before creating the branch
-   AutoCreateBranch: true
-   ```
-
-7. Confirm to the user:
+6. Confirm to the user:
    - Path of the created file.
    - Reminder: the spec is in `Draft` state. Change it to `Approved` once you have re-read it.
-   - If you just created `specs/.spec-config.yml`, mention it exists and that `AutoCreateBranch` defaults to `true` (set it to `false` to control branch creation yourself).
-   - Next step: once reviewed and approved, run `/spec-impl NN-slug` to implement it.
-   - **Stop here.** Do not propose implementing the spec, writing code, or taking any further action beyond this confirmation.
+   - Suggestion for the next step: leave the spec command and start the implementation with a prompt like _"Implement spec NN step by step, pausing after each step of the implementation plan so I can review the diff."_
 
 ## Hard rules
 
 - **Never write code during this command.** Only the spec's `.md` file at the end.
-- **Never propose implementing the spec after saving it.** Your job ends when the file is written. The user runs `/spec-impl` when they are ready.
 - **Never assume decisions the user did not confirm.** If you are missing information, ask.
 - **Never generate the full spec in a single response.** Section by section, with confirmation.
 - **If the user wants to speed up and skip Phase 2**, remind them: "Questions now save hours later. Are you sure you want to skip them?". If they insist, respect their decision but record it in the spec's decisions section ("Quick definition without detailed clarification").

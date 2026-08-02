@@ -11,9 +11,7 @@ Every spec starts with metadata in a blockquote (no tables, no blocks, simple as
 ```markdown
 # SPEC NN — Short, descriptive title
 
-> **Status:** Draft
-> **Depends on:** SPEC 01, SPEC 02
-> **Date:** YYYY-MM-DD
+> **Status:** Draft · **Depends on:** SPEC 01, SPEC 02 · **Date:** YYYY-MM-DD
 > **Objective:** A single sentence. If you need two sentences, the feature is too big.
 ```
 

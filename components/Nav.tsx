@@ -1,52 +1,67 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { useSession } from "@/lib/session";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
 
 export default function Nav() {
-  const pathname = usePathname();
-  const { user, signOut } = useSession();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const { user, signOut } = useUser();
 
-  const isBiblioteca = pathname === "/" || pathname.startsWith("/juego/") || pathname.startsWith("/jugar/");
-  const isSalon = pathname === "/salon";
-  const isAuth = pathname === "/auth";
+  const isLibrary = pathname.startsWith('/games');
+  const isHall = pathname === '/hall-of-fame';
+  const isAbout = pathname === '/about';
 
-  const close = () => setOpen(false);
+  function close() {
+    setOpen(false);
+  }
+
+  function handleSignOut() {
+    signOut();
+    close();
+  }
 
   return (
     <>
       <nav className="av-nav">
         <Link href="/" className="logo" onClick={close}>
-          <div className="logo-mark"></div>
+          <div className="logo-mark" />
           <div className="logo-text neon-cyan">
             ARCADE <span className="neon-magenta">VAULT</span>
           </div>
         </Link>
+
         <div className="links">
-          <Link href="/" className={isBiblioteca ? "active" : ""}>
+          <Link href="/games" className={isLibrary ? 'active' : ''}>
             Biblioteca
           </Link>
-          <Link href="/salon" className={isSalon ? "active" : ""}>
+          <Link href="/hall-of-fame" className={isHall ? 'active' : ''}>
             Salón de la Fama
           </Link>
+          <Link href="/about" className={isAbout ? 'active' : ''}>
+            Sobre Nosotros
+          </Link>
         </div>
-        <div className="spacer"></div>
+
+        <div className="spacer" />
+
         <div className="coin-counter">
-          <span className="coin"></span>
+          <span className="coin" />
           <span>CRÉDITOS · 03</span>
         </div>
+
         {user ? (
-          <button className="btn ghost auth-btn" onClick={signOut}>
-            {user.name} ▾
+          <button className="btn ghost auth-btn" onClick={handleSignOut}>
+            {user} ▾
           </button>
         ) : (
           <Link href="/auth" className="btn auth-btn">
             Iniciar Sesión
           </Link>
         )}
+
         <button
           className="btn ghost hamburger"
           onClick={() => setOpen(true)}
@@ -57,30 +72,49 @@ export default function Nav() {
       </nav>
 
       <div
-        className={"av-mobile-backdrop" + (open ? " open" : "")}
+        className={`av-mobile-backdrop${open ? ' open' : ''}`}
         onClick={close}
-      ></div>
-      <aside className={"av-mobile-panel" + (open ? " open" : "")}>
-        <div className="pixel neon-cyan" style={{ fontSize: 11, marginBottom: 16 }}>
+      />
+      <aside className={`av-mobile-panel${open ? ' open' : ''}`}>
+        <div
+          className="pixel neon-cyan"
+          style={{ fontSize: 11, marginBottom: 16 }}
+        >
           MENÚ
         </div>
-        <Link href="/" className={isBiblioteca ? "active" : ""} onClick={close}>
+        <Link href="/games" className={isLibrary ? 'active' : ''} onClick={close}>
           Biblioteca
         </Link>
-        <Link href="/salon" className={isSalon ? "active" : ""} onClick={close}>
+        <Link
+          href="/hall-of-fame"
+          className={isHall ? 'active' : ''}
+          onClick={close}
+        >
           Salón de la Fama
         </Link>
-        {user ? (
-          <a className={isAuth ? "active" : ""} onClick={() => { close(); signOut(); }}>
-            Cuenta
-          </a>
-        ) : (
-          <Link href="/auth" className={isAuth ? "active" : ""} onClick={close}>
-            Iniciar Sesión
-          </Link>
-        )}
-        <div style={{ flex: 1 }}></div>
-        <div className="pixel" style={{ fontSize: 9, color: "var(--ink-faint)", letterSpacing: "0.16em" }}>
+        <Link
+          href="/about"
+          className={isAbout ? 'active' : ''}
+          onClick={close}
+        >
+          Sobre Nosotros
+        </Link>
+        <Link
+          href="/auth"
+          className={pathname === '/auth' ? 'active' : ''}
+          onClick={close}
+        >
+          {user ? 'Cuenta' : 'Iniciar Sesión'}
+        </Link>
+        <div style={{ flex: 1 }} />
+        <div
+          className="pixel"
+          style={{
+            fontSize: 9,
+            color: 'var(--ink-faint)',
+            letterSpacing: '0.16em',
+          }}
+        >
           CRÉDITOS · 03
         </div>
       </aside>
