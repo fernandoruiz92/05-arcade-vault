@@ -33,6 +33,9 @@ Next.js 16.2.12 (App Router) · React 19.2.4 · TypeScript strict · Tailwind CS
 - Path alias `@/*` → repo root.
 - Fonts come from `next/font/google` (Geist / Geist_Mono) wired to CSS variables in `app/layout.tsx`; note `globals.css` currently hardcodes `font-family: Arial` on `body`, overriding those variables.
 
+## Skills
+USa siempre /frontend-design para diseñar interfaces de usuario.
+
 ## Next.js 16 gotchas that will bite
 
 `AGENTS.md` says to read `node_modules/next/dist/docs/` before writing code — that is the authoritative reference for this version. The most common traps versus older Next.js:
