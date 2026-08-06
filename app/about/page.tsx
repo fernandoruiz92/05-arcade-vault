@@ -1,12 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 type FormState = { name: string; email: string; msg: string };
-type Status = "idle" | "sending" | "success" | "error";
+type Status = 'idle' | 'sending' | 'success' | 'error';
 
 const HeartSVG = (
-  <svg className="hl-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className="hl-icon"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g fill="currentColor">
       <rect x="2" y="3" width="4" height="2" />
       <rect x="10" y="3" width="4" height="2" />
@@ -24,9 +28,21 @@ const HeartSVG = (
 );
 
 const BrowserSVG = (
-  <svg className="hl-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className="hl-icon"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g fill="currentColor">
-      <rect x="1" y="2" width="14" height="12" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <rect
+        x="1"
+        y="2"
+        width="14"
+        height="12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
       <rect x="1" y="2" width="14" height="3" />
       <rect x="3" y="3" width="1" height="1" fill="#0a0a0f" />
       <rect x="5" y="3" width="1" height="1" fill="#0a0a0f" />
@@ -39,7 +55,11 @@ const BrowserSVG = (
 );
 
 const PlantSVG = (
-  <svg className="hl-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className="hl-icon"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g fill="currentColor">
       <rect x="7" y="2" width="2" height="10" />
       <rect x="4" y="4" width="3" height="2" />
@@ -54,7 +74,13 @@ const PlantSVG = (
 
 const DIVIDER_COUNT = 24;
 
-function TerminalSuccess({ name, onReset }: { name: string; onReset: () => void }) {
+function TerminalSuccess({
+  name,
+  onReset,
+}: {
+  name: string;
+  onReset: () => void;
+}) {
   return (
     <div className="terminal-success">
       <div className="term-bar">
@@ -86,12 +112,14 @@ function TerminalSuccess({ name, onReset }: { name: string; onReset: () => void 
           <span className="dim">MENSAJE ENTREGADO. </span>
           <span className="line">✓ OK</span>
         </p>
-        <p className="term-line term-d5 success pixel">▸ MISIÓN CUMPLIDA, OPERADOR.</p>
+        <p className="term-line term-d5 success pixel">
+          ▸ MISIÓN CUMPLIDA, OPERADOR.
+        </p>
       </div>
-      <div style={{ padding: "0 18px 18px" }}>
+      <div style={{ padding: '0 18px 18px' }}>
         <button
           className="btn press"
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           onClick={onReset}
         >
           ENVIAR OTRO MENSAJE
@@ -102,23 +130,23 @@ function TerminalSuccess({ name, onReset }: { name: string; onReset: () => void 
 }
 
 export default function AboutPage() {
-  const [form, setForm] = useState<FormState>({ name: "", email: "", msg: "" });
-  const [status, setStatus] = useState<Status>("idle");
+  const [form, setForm] = useState<FormState>({ name: '', email: '', msg: '' });
+  const [status, setStatus] = useState<Status>('idle');
   const [shake, setShake] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const els = document.querySelectorAll<HTMLElement>(".reveal");
+    const els = document.querySelectorAll<HTMLElement>('.reveal');
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("in");
+            e.target.classList.add('in');
             io.unobserve(e.target);
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -131,30 +159,30 @@ export default function AboutPage() {
       setTimeout(() => setShake(false), 400);
       return;
     }
-    setStatus("sending");
+    setStatus('sending');
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
       const data = await res.json();
       if (data.ok) {
-        setStatus("success");
+        setStatus('success');
       } else {
-        setErrorMsg(data.error ?? "Error al enviar.");
-        setStatus("error");
+        setErrorMsg(data.error ?? 'Error al enviar.');
+        setStatus('error');
       }
     } catch {
-      setErrorMsg("Error de red. Intenta de nuevo.");
-      setStatus("error");
+      setErrorMsg('Error de red. Intenta de nuevo.');
+      setStatus('error');
     }
   }
 
   function reset() {
-    setForm({ name: "", email: "", msg: "" });
-    setStatus("idle");
-    setErrorMsg("");
+    setForm({ name: '', email: '', msg: '' });
+    setStatus('idle');
+    setErrorMsg('');
   }
 
   return (
@@ -164,22 +192,27 @@ export default function AboutPage() {
         <div className="kicker pixel neon-yellow">▸ ACERCA DE</div>
         <h1 className="about-title">ACERCA DE ARCADE VAULT</h1>
         <p className="about-mission">
-          ARCADE VAULT nació del amor por los videojuegos clásicos. Nuestra misión es
-          preservar y celebrar los arcades que definieron una generación, haciéndolos
-          accesibles para todos, en cualquier lugar y sin costo.
+          ARCADE VAULT nació del amor por los videojuegos clásicos. Nuestra
+          misión es preservar y celebrar los arcades que definieron una
+          generación, haciéndolos accesibles para todos, en cualquier lugar y
+          sin costo.
         </p>
         <div className="highlight-row">
-          <div className="highlight magenta" style={{ transitionDelay: "0ms" }}>
+          <div className="highlight magenta" style={{ transitionDelay: '0ms' }}>
             {HeartSVG}
             <div className="hl-text pixel">HECHO CON ❤️ PARA JUGADORES</div>
           </div>
-          <div className="highlight cyan" style={{ transitionDelay: "80ms" }}>
+          <div className="highlight cyan" style={{ transitionDelay: '80ms' }}>
             {BrowserSVG}
-            <div className="hl-text pixel">JUEGOS EN HTML — CORREN EN CUALQUIER NAVEGADOR</div>
+            <div className="hl-text pixel">
+              JUEGOS EN HTML — CORREN EN CUALQUIER NAVEGADOR
+            </div>
           </div>
-          <div className="highlight green" style={{ transitionDelay: "160ms" }}>
+          <div className="highlight green" style={{ transitionDelay: '160ms' }}>
             {PlantSVG}
-            <div className="hl-text pixel">PROYECTO EN CONSTANTE CRECIMIENTO</div>
+            <div className="hl-text pixel">
+              PROYECTO EN CONSTANTE CRECIMIENTO
+            </div>
           </div>
         </div>
       </section>
@@ -203,8 +236,8 @@ export default function AboutPage() {
             <div className="kicker pixel neon-cyan">▸ CONTACTO</div>
             <h2 className="contact-title">CONTÁCTANOS</h2>
             <p className="contact-sub">
-              ¿Tienes alguna sugerencia, quieres proponer un juego, o simplemente
-              quieres saludar? Escríbenos.
+              ¿Tienes alguna sugerencia, quieres proponer un juego, o
+              simplemente quieres saludar? Escríbenos.
             </p>
             <div className="contact-tips">
               <div className="tip">
@@ -223,11 +256,11 @@ export default function AboutPage() {
           </div>
 
           {/* Formulario / Terminal éxito */}
-          {status === "success" ? (
+          {status === 'success' ? (
             <TerminalSuccess name={form.name} onReset={reset} />
           ) : (
             <form
-              className={`contact-form${shake ? " shake" : ""}`}
+              className={`contact-form${shake ? ' shake' : ''}`}
               onSubmit={onSubmit}
               noValidate
             >
@@ -258,19 +291,21 @@ export default function AboutPage() {
                   onChange={(e) => setForm({ ...form, msg: e.target.value })}
                 />
               </div>
-              {status === "error" && (
+              {status === 'error' && (
                 <p className="form-err pixel">⚠ {errorMsg}</p>
               )}
               <button
                 type="submit"
                 className="btn xl press"
-                disabled={status === "sending"}
-                style={{ width: "100%" }}
+                disabled={status === 'sending'}
+                style={{ width: '100%' }}
               >
-                {status === "sending" ? (
-                  <><span className="spinner" /> ENVIANDO…</>
+                {status === 'sending' ? (
+                  <>
+                    <span className="spinner" /> ENVIANDO…
+                  </>
                 ) : (
-                  "▶  ENVIAR MENSAJE"
+                  '▶  ENVIAR MENSAJE'
                 )}
               </button>
             </form>
