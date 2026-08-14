@@ -192,6 +192,9 @@ export default function PlayShell({
               <button className="btn" onClick={restart}>
                 JUGAR DE NUEVO
               </button>
+              <Link href="/hall-of-fame" className="btn">
+                SALÓN DE LA FAMA
+              </Link>
               <Link href="/games" className="btn magenta">
                 VOLVER AL VAULT
               </Link>

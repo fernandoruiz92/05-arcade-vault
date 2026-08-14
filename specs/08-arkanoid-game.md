@@ -1,6 +1,6 @@
 # SPEC 08 — Integración del juego Arkanoid
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** 06-games-table-leaderboard-supabase, 07-tetris-game
 > **Fecha:** 2026-08-13
 > **Objetivo:** Integrar Arkanoid (canvas puro con spritesheet y sonidos) como tercer juego

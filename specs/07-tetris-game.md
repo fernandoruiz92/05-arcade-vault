@@ -1,6 +1,6 @@
 # SPEC 07 — Integración del juego Tetris
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** 06-games-table-leaderboard-supabase
 > **Fecha:** 2026-08-13
 > **Objetivo:** Integrar Tetris (canvas puro) como segundo juego jugable de la plataforma
