@@ -544,6 +544,45 @@ a { color: inherit; text-decoration: none; }
   filter: drop-shadow(0 0 8px rgba(0,245,255,0.5));
 }
 
+/* "Muro + bola en vuelo": tres filas de ladrillos en el tercio superior — la fila
+   central deja un hueco (una brecha real, no una fila más corta) por el que la
+   bola ya pasó. Su estela cruza en diagonal hacia la paleta magenta al pie. */
+.cover-arkanoid { background: radial-gradient(circle at 50% 88%, #2a0018, #0a0a12 70%); }
+.cover-arkanoid::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg,
+      #ff3b3b 0 15%, transparent 15% 16.5%,
+      var(--yellow) 16.5% 31.5%, transparent 31.5% 33%,
+      var(--cyan) 33% 48%, transparent 48% 49.5%,
+      var(--magenta) 49.5% 64.5%, transparent 64.5% 66%,
+      #ff4fa3 66% 81%, transparent 81% 82.5%,
+      var(--green) 82.5% 100%) 0 6%/100% 8% no-repeat,
+    linear-gradient(90deg,
+      var(--yellow) 0 15%, transparent 15% 16.5%,
+      var(--green) 16.5% 31.5%, transparent 31.5% 49.5%,
+      #ff3b3b 49.5% 64.5%, transparent 64.5% 66%,
+      var(--cyan) 66% 81%, transparent 81% 82.5%,
+      var(--magenta) 82.5% 100%) 0 16%/100% 8% no-repeat,
+    linear-gradient(90deg,
+      var(--cyan) 0 15%, transparent 15% 16.5%,
+      var(--magenta) 16.5% 31.5%, transparent 31.5% 33%,
+      var(--green) 33% 48%, transparent 48% 49.5%,
+      var(--yellow) 49.5% 64.5%, transparent 64.5% 66%,
+      #ff3b3b 66% 81%, transparent 81% 82.5%,
+      #ff4fa3 82.5% 100%) 0 26%/100% 8% no-repeat;
+}
+.cover-arkanoid::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 72% 68%, #fff 0 4px, rgba(255,255,255,0.5) 5px, transparent 7px) no-repeat,
+    linear-gradient(135deg, transparent 0%, rgba(255,0,110,0.7) 46%, rgba(255,0,110,0.9) 50%, rgba(255,0,110,0.7) 54%, transparent 100%) 34% 30%/34% 42% no-repeat,
+    linear-gradient(var(--magenta), var(--magenta)) 37% 89%/26% 3% no-repeat;
+  filter: drop-shadow(0 0 8px rgba(255,0,110,0.5));
+}
+
 /* ===== detail screen ===== */
 .av-detail {
   display: grid;
