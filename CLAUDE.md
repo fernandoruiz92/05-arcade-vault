@@ -28,6 +28,10 @@ Usa siempre /frontend-design para diseñar la interfaz de usuario.
 - `/add-game <game>` — end-to-end flow for adding a new playable game: ports a canvas game to a React component, creates its `/games/<id>/play` route, generates cover-art CSS, registers the row in the Supabase `games` table (via MCP), and wires the leaderboard. Companion docs: `.claude/skills/add-game/platform-contract.md` (schema/route/PlayShell contract) and `porting-recipe.md` (canvas→React steps).
 - `/frontend-design` — aesthetic direction, typography, and UI design guidance.
 
+## Agents
+
+- `game-planner` (`.claude/agents/game-planner.md`) — catalog planner for deciding what game to add next, evaluating whether a proposed idea fits the platform, and logging every game suggestion (even off-hand ones). Reads `references/game-suggestions-todo.md` (persistent suggestion log, status `pending`/`accepted`/`rejected`/`implemented`), `references/implemented-games.md`, `.claude/skills/add-game/platform-contract.md`, and `specs/*.md` before opining. Appends new suggestions as audit-log rows (never rewrites/deletes existing ones) and only edits a row's `Status` when told a past suggestion changed state. Doesn't implement games — invoke it before running `/spec` or `/add-game` on a new idea, or whenever someone proposes a game so it gets recorded.
+
 ## Architecture
 
 Uses Next.js **App Router** exclusively — no `pages/` directory. Entry points:
