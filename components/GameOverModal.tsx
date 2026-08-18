@@ -47,6 +47,9 @@ export default function GameOverModal({
           <button className="btn" onClick={onRestart}>
             JUGAR DE NUEVO
           </button>
+          <button className="btn" onClick={() => router.push("/hall-of-fame")}>
+            SALÓN DE LA FAMA
+          </button>
           <button className="btn magenta" onClick={() => router.push("/")}>
             VOLVER AL VAULT
           </button>
