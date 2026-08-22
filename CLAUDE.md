@@ -6,74 +6,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Arcade Vault — an online gaming platform where users play and compete for points. Uses **Spec Driven Design** via the `/spec` and `/spec-impl` skills from `npx skills@latest add Klerith/fernando-skills`.
+Arcade Vault — online gaming platform where users play classic arcade games and compete for points on per-game leaderboards. Uses **Spec Driven Design** via the `/spec` and `/spec-impl` skills from `npx skills@latest add Klerith/fernando-skills` (see `skills-lock.json`).
 
 ## Stack
 
-- **Next.js 16.2.6** with App Router (`app/` directory) — read `node_modules/next/dist/docs/` before writing Next.js code; APIs differ from training data
+- **Next.js 16.2.6** with App Router — read `node_modules/next/dist/docs/` before writing Next.js code; APIs differ from training data
 - **React 19.2.4**
 - **Tailwind CSS v4** (PostCSS plugin via `@tailwindcss/postcss`)
 - **TypeScript**
-- **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — data backend for games and scores (see below). Not yet used for auth.
-- **Resend** — transactional email for the About/contact form
+- **Supabase** (`@supabase/ssr`, `@supabase/supabase-js`) — auth + scores persistence
+- **Resend** — contact form email delivery
 
-No test runner is configured yet.
+No test runner configured.
 
 ## Skills
 
-Usa siempre /frontend-design para diseñar la interfaz de usuario.
+Usa siempre `/frontend-design` para diseñar la interfaz de usuario.
 
-- `/spec` — guided, question-driven spec designer; writes specs section-by-section into `specs/` from `specs/template.md`. Does not write code.
-- `/spec-impl <NN-spec-name>` — implements an approved spec: verifies it's marked "Approved", creates/switches to a spec-named branch, implements step by step with diff-review pauses.
-- `/add-game <game>` — end-to-end flow for adding a new playable game: ports a canvas game to a React component, creates its `/games/<id>/play` route, generates cover-art CSS, registers the row in the Supabase `games` table (via MCP), and wires the leaderboard. Companion docs: `.claude/skills/add-game/platform-contract.md` (schema/route/PlayShell contract) and `porting-recipe.md` (canvas→React steps).
-- `/frontend-design` — aesthetic direction, typography, and UI design guidance.
+## Agentes
 
-## Agents
-
-- `game-planner` (`.claude/agents/game-planner.md`) — catalog planner for deciding what game to add next, evaluating whether a proposed idea fits the platform, and logging every game suggestion (even off-hand ones). Reads `references/game-suggestions-todo.md` (persistent suggestion log, status `pending`/`accepted`/`rejected`/`implemented`), `references/implemented-games.md`, `.claude/skills/add-game/platform-contract.md`, and `specs/*.md` before opining. Appends new suggestions as audit-log rows (never rewrites/deletes existing ones) and only edits a row's `Status` when told a past suggestion changed state. Doesn't implement games — invoke it before running `/spec` or `/add-game` on a new idea, or whenever someone proposes a game so it gets recorded.
+- **`game-planner`** (`.claude/agents/game-planner.md`) — planifica y sugiere el próximo juego a implementar. Lee el catálogo actual, evalúa candidatos por diversidad de género, factibilidad en canvas 2D y reconocimiento clásico, y mantiene una memoria persistente de sugerencias en `references/game-suggestions-todo.md`. Úsalo cuando el usuario pregunte qué juego sigue o pida ideas.
+- **`game-jam`** (`.claude/agents/game-jam.md`) — dado un tema en lenguaje natural, elige un juego arcade y genera al menos dos specs completos en `specs/game-jam/<game-id>/` siguiendo el formato de los specs 07-09. Úsalo con "game jam: <tema>" o "specs para un juego de <tema>".
+- **`skin-designer`** (`.claude/agents/skin-designer.md`) — aplica los 3 skins canónicos (classic, retro, neon) al juego indicado por el usuario. Trabaja un juego por corrida. Implementa directamente sobre `components/games/<Juego>.tsx` siguiendo el patrón de TetrisGame. Memoria en `references/game-with-themes.md`. Úsalo con "aplica skins a \<juego\>".
+- **`mobile-porter`** (`.claude/agents/mobile-porter.md`) — aplica el patrón de controles táctiles mobile (spec 10) a un juego concreto: oculta el HUD en `<md`, escala el canvas, y cabla `<MobileGamepad>` en la play-page sin tocar el componente canvas. Trabaja un juego por corrida. Úsalo con "porta \<juego\> a mobile", "añade controles táctiles a \<juego\>" o "haz \<juego\> responsive".
 
 ## Architecture
 
-Uses Next.js **App Router** exclusively — no `pages/` directory. Entry points:
+App Router exclusively — no `pages/` directory.
 
-- `app/layout.tsx` — root layout with Geist font variables and global CSS
-- `app/globals.css` — Tailwind base styles
-- `app/page.tsx` — home route (`/`) — hero + live games list pulled from Supabase
+### Routes (`app/`)
 
-### Current routes (Supabase-backed)
+- `layout.tsx` — root layout (Geist fonts, global CSS, `UserContext` provider, `Nav`)
+- `page.tsx` — home / landing
+- `about/` — about + contact form
+- `api/contact/` — Resend-backed contact endpoint
+- `auth/` — Supabase auth page
+- `games/` — games index (`GamesGrid.tsx`) + per-game routes like: `arkanoid`, `asteroids`, `snake`, `tetris` and more...
+  (see `references/implemented-games.md`) when you need to check which games are implemented and how to implement new ones.
 
-- `app/games/page.tsx` — game library/grid, reads the `games` table
-- `app/games/[id]/page.tsx` — game detail page (info + scores)
-- `app/games/{asteroids,tetris,arkanoid,snake}/play/page.tsx` — one static play route per shipped game; each just wraps `components/games/PlayShell.tsx` around the game's dynamically-imported component
-- `app/hall-of-fame/page.tsx` — global leaderboard, reads `games`/`scores`
-- `app/about/page.tsx` — about/contact page, sends mail via Resend
-- `app/auth/page.tsx` — sign-in/sign-up UI. **Not wired to Supabase Auth yet** — `login()` just stores a username string in `localStorage` via `app/context/UserContext.tsx`; the Google/GitHub buttons and password fields are decorative for now
-- `app/games/[id]/play/page.tsx` — generic placeholder play page (fake auto-incrementing score); not used by any shipped game
+- `games/[id]/` — dynamic game detail with nested `play/` route
+- `hall-of-fame/` — leaderboard / scores
+- `context/UserContext.tsx` — client-side auth user context
+- `data/` — static catalog: `games.ts`, `scores.ts`, `index.ts`
+- `RevealObserver.tsx` — scroll-reveal animations
 
-### Legacy (do not extend)
+### Shared code
 
-`app/juego/[id]`, `app/jugar/[id]`, `app/salon`, and `components/GameCard.tsx` / `GamePlayer.tsx` / `GameOverModal.tsx` / `Leaderboard.tsx` are a pre-Supabase mock-data prototype driven by `lib/games.ts` / `lib/session.tsx` (static arrays, seeded fake scores). They predate the Supabase migration and are unused by the current game routes — treat as dead code, not a pattern to follow. `app/data/*.ts` files are empty/vestigial.
+- `components/Nav.tsx` — top navigation
+- `components/games/` — canvas game implementations (`ArkanoidGame`, `AsteroidsGame`, `SnakeGame`, `TetrisGame`)
+- `lib/supabase/` — `client.ts` (browser), `server.ts` (RSC/route handlers), `types.ts` (DB types)
+- `public/` — sprite sheets (`spritesheet-breakout.png`, `fruits.png`) and audio (`ball-bounce.mp3`, `break-sound.mp3`)
 
-### Games implemented
+### Specs
 
-Four playable games so far, each following the same pattern (canvas game component + `components/games/types.ts`'s `GameApi` contract + a `games` table row):
+`specs/` holds the spec-driven design history (01 → 09): MVP screens, landing, about+contact, Supabase integration, each game, and the shared games-table/leaderboard schema.
 
-1. **Asteroids** — `components/games/AsteroidsGame.tsx`
-2. **Tetris** — `components/games/TetrisGame.tsx`
-3. **Arkanoid** — `components/games/ArkanoidGame.tsx` (+ `arkanoid/levels.ts`, `arkanoid/spritesheet.ts`)
-4. **Snake** — `components/games/SnakeGame.tsx` (+ `snake/sprites.ts`)
-5. and more... (see  `references/mplemented-games.md`) when you need to check wich games are implemented new onces.
+## Conventions
 
-Shared play-page chrome (HUD, CRT frame, pause overlay, game-over modal, score persistence to Supabase, restart) lives in `components/games/PlayShell.tsx` — new games should use `/add-game` rather than hand-rolling this.
-
-### Supabase
-
-- Clients: `lib/supabase/client.ts` (browser) and `lib/supabase/server.ts` (server, async)
-- Types: `lib/supabase/types.ts` — hand-written `GameRow`, `ScoreRow` (no generated types yet)
-- Health check: `app/api/supabase-health/route.ts`
-- **`games` table**: `id` (text PK), `title`, `short`, `long`, `cat` (CHECK: `ARCADE`|`PUZZLE`|`SHOOTER`), `cover` (CSS class name), `color` (CHECK: `cyan`|`magenta`|`yellow`|`green`), `created_at`
-- **`scores` table**: `id` (uuid PK), `game_id` (FK → `games.id`), `player_name`, `score` (int), `user_id` (nullable, unused today), `created_at`
-- RLS on both tables: public `SELECT`; public `INSERT` only on `scores`. Writing to `games` requires the Supabase MCP server (privileged), not the browser client — this is how `/add-game` registers new games.
-- Full contract documented in `.claude/skills/add-game/platform-contract.md` and specs `04-supabase-integration.md` / `06-games-table-leaderboard-supabase.md`.
-
-New routes go under `app/` as folders with `page.tsx`. Shared UI goes in `components/`. Server Components are the default; mark client components with `"use client"` only when needed.
+- Server Components by default; add `"use client"` only when needed (game canvases, auth context, interactive forms).
+- New routes: folder under `app/` with `page.tsx`.
+- Shared UI in `components/`; game logic colocated in `components/games/<Game>.tsx`.
+- Supabase: import from `lib/supabase/server` in RSC / route handlers, `lib/supabase/client` in client components.
+- New games follow the existing pattern: spec in `specs/`, canvas component in `components/games/`, route under `app/games/<name>/`, score writes through `lib/supabase`.

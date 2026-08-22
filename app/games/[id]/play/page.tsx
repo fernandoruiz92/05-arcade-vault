@@ -144,6 +144,9 @@ export default function GamePlayer({
               <button className="btn" onClick={restart}>
                 JUGAR DE NUEVO
               </button>
+              <Link href={`/games/${id}#leaderboard`} className="btn cyan">
+                VER LEADERBOARD
+              </Link>
               <Link href="/games" className="btn magenta">
                 VOLVER AL VAULT
               </Link>

@@ -13,6 +13,7 @@ export default function Nav() {
   const isLibrary = pathname.startsWith('/games');
   const isHall = pathname === '/hall-of-fame';
   const isAbout = pathname === '/about';
+  const isPlayPage = pathname.endsWith('/play');
 
   function close() {
     setOpen(false);
@@ -25,7 +26,7 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="av-nav">
+      <nav className={`av-nav${isPlayPage ? ' nav-hide-mobile' : ''}`}>
         <Link href="/" className="logo" onClick={close}>
           <div className="logo-mark" />
           <div className="logo-text neon-cyan">
@@ -72,17 +73,23 @@ export default function Nav() {
       </nav>
 
       <div
-        className={`av-mobile-backdrop${open ? ' open' : ''}`}
+        className={`av-mobile-backdrop${open ? ' open' : ''}${isPlayPage ? ' nav-hide-mobile' : ''}`}
         onClick={close}
       />
-      <aside className={`av-mobile-panel${open ? ' open' : ''}`}>
+      <aside
+        className={`av-mobile-panel${open ? ' open' : ''}${isPlayPage ? ' nav-hide-mobile' : ''}`}
+      >
         <div
           className="pixel neon-cyan"
           style={{ fontSize: 11, marginBottom: 16 }}
         >
           MENÚ
         </div>
-        <Link href="/games" className={isLibrary ? 'active' : ''} onClick={close}>
+        <Link
+          href="/games"
+          className={isLibrary ? 'active' : ''}
+          onClick={close}
+        >
           Biblioteca
         </Link>
         <Link
@@ -92,11 +99,7 @@ export default function Nav() {
         >
           Salón de la Fama
         </Link>
-        <Link
-          href="/about"
-          className={isAbout ? 'active' : ''}
-          onClick={close}
-        >
+        <Link href="/about" className={isAbout ? 'active' : ''} onClick={close}>
           Sobre Nosotros
         </Link>
         <Link
