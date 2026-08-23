@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import MobileGamepad from '@/components/MobileGamepad';
 
@@ -22,9 +22,12 @@ function getSavedSkin() {
 }
 
 export default function ArkanoidPlay() {
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [level, setLevel] = useState(1);
+  const scoreRef = useRef(0);
+  const livesRef = useRef(3);
+  const levelRef = useRef(1);
+  const scoreEl = useRef<HTMLSpanElement>(null);
+  const livesEl = useRef<HTMLSpanElement>(null);
+  const levelEl = useRef<HTMLSpanElement>(null);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [name, setName] = useState('INVITADO');
@@ -41,11 +44,25 @@ export default function ArkanoidPlay() {
     localStorage.setItem('arkanoid-skin', key);
   }
 
-  const handleScoreChange = useCallback((s: number) => setScore(s), []);
-  const handleLivesChange = useCallback((l: number) => setLives(l), []);
-  const handleLevelChange = useCallback((l: number) => setLevel(l), []);
+  const handleScoreChange = useCallback((s: number) => {
+    scoreRef.current = s;
+    if (scoreEl.current)
+      scoreEl.current.textContent = s.toLocaleString('es-ES');
+  }, []);
+  const handleLivesChange = useCallback((l: number) => {
+    livesRef.current = l;
+    if (livesEl.current)
+      livesEl.current.textContent = '♥ '.repeat(Math.max(0, l)).trim() || '—';
+  }, []);
+  const handleLevelChange = useCallback((l: number) => {
+    levelRef.current = l;
+    if (levelEl.current)
+      levelEl.current.textContent = String(l).padStart(2, '0');
+  }, []);
   const handleGameOver = useCallback((finalScore: number) => {
-    setScore(finalScore);
+    scoreRef.current = finalScore;
+    if (scoreEl.current)
+      scoreEl.current.textContent = finalScore.toLocaleString('es-ES');
     setOver(true);
   }, []);
 
@@ -57,9 +74,12 @@ export default function ArkanoidPlay() {
   }, [over]);
 
   function restart() {
-    setScore(0);
-    setLives(3);
-    setLevel(1);
+    scoreRef.current = 0;
+    livesRef.current = 3;
+    levelRef.current = 1;
+    if (scoreEl.current) scoreEl.current.textContent = '0';
+    if (livesEl.current) livesEl.current.textContent = '♥ ♥ ♥';
+    if (levelEl.current) levelEl.current.textContent = '01';
     setPaused(false);
     setOver(false);
     setSaved(false);
@@ -82,17 +102,21 @@ export default function ArkanoidPlay() {
             </div>
             <div className="hud-stat">
               <div className="l">Puntuación</div>
-              <div className="v">{score.toLocaleString('es-ES')}</div>
+              <div className="v">
+                <span ref={scoreEl}>0</span>
+              </div>
             </div>
             <div className="hud-stat lives">
               <div className="l">Vidas</div>
               <div className="v">
-                {'♥ '.repeat(Math.max(0, lives)).trim() || '—'}
+                <span ref={livesEl}>♥ ♥ ♥</span>
               </div>
             </div>
             <div className="hud-stat level">
               <div className="l">Nivel</div>
-              <div className="v">{String(level).padStart(2, '0')}</div>
+              <div className="v">
+                <span ref={levelEl}>01</span>
+              </div>
             </div>
             <div className="hud-stat">
               <div className="l">Skin</div>
@@ -189,7 +213,9 @@ export default function ArkanoidPlay() {
           <div className="modal">
             <h2>FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
-            <div className="final">{score.toLocaleString('es-ES')}</div>
+            <div className="final">
+              {scoreRef.current.toLocaleString('es-ES')}
+            </div>
             {!saved ? (
               <div className="input-row">
                 <input
@@ -208,7 +234,7 @@ export default function ArkanoidPlay() {
                     await supabase.from('scores').insert({
                       game_id: 'arkanoid',
                       player_name: name,
-                      score,
+                      score: scoreRef.current,
                       user_id: null,
                     });
                   }}

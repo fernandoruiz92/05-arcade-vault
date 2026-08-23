@@ -1,6 +1,6 @@
 # SPEC — Frogger: integración core del juego
 
-> **Estado:** Propuesto
+> **Estado:** Implementado
 > **Depende de:** 06-games-table-leaderboard-supabase
 > **Fecha:** 2026-05-20
 > **Objetivo:** Integrar Frogger (canvas puro, construido desde cero) como juego jugable en Arcade Vault con ID `frogger`, conectando score, vidas, nivel y game over con el HUD React y la play-page dedicada.
@@ -53,7 +53,7 @@ VALUES (
   'Guía a tu rana a través de una carretera repleta de coches y un río de troncos y tortugas flotantes. Llena las cinco bocas del otro lado para completar la ronda; cada nivel acelera el tráfico y acorta el tiempo. Tres vidas y mucho asfalto por delante.',
   'ARCADE',
   'cover-frogger',
-  'lime'
+  'green'
 );
 ```
 

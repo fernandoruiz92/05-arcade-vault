@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface TetrisGameProps {
   paused: boolean;
@@ -203,7 +203,34 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
 
-export default function TetrisGame({
+function buildNeonBlockCache(
+  colors: (string | null)[],
+): Map<number, HTMLCanvasElement> {
+  const cache = new Map<number, HTMLCanvasElement>();
+  for (let ci = 1; ci < colors.length; ci++) {
+    const color = colors[ci];
+    if (!color) continue;
+    const oc = document.createElement('canvas');
+    oc.width = BLOCK;
+    oc.height = BLOCK;
+    const octx = oc.getContext('2d')!;
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    octx.shadowBlur = 15;
+    octx.shadowColor = color;
+    octx.fillStyle = `rgba(${r},${g},${b},0.55)`;
+    octx.fillRect(1, 1, BLOCK - 2, BLOCK - 2);
+    octx.strokeStyle = color;
+    octx.lineWidth = 1.5;
+    octx.strokeRect(1.75, 1.75, BLOCK - 3.5, BLOCK - 3.5);
+    octx.shadowBlur = 0;
+    cache.set(ci, oc);
+  }
+  return cache;
+}
+
+function TetrisGame({
   paused,
   skinKey = 'retro',
   onScoreChange,
@@ -216,6 +243,7 @@ export default function TetrisGame({
 
   const pausedRef = useRef(paused);
   const skinRef = useRef<Skin>(SKINS[skinKey] ?? SKINS.retro);
+  const neonCacheRef = useRef<Map<number, HTMLCanvasElement> | null>(null);
   const cbScore = useRef(onScoreChange);
   const cbLives = useRef(onLivesChange);
   const cbLevel = useRef(onLevelChange);
@@ -226,6 +254,8 @@ export default function TetrisGame({
   }, [paused]);
   useEffect(() => {
     skinRef.current = SKINS[skinKey] ?? SKINS.retro;
+    neonCacheRef.current =
+      skinKey === 'neon' ? buildNeonBlockCache(SKINS.neon.colors) : null;
   }, [skinKey]);
   useEffect(() => {
     cbScore.current = onScoreChange;
@@ -433,33 +463,59 @@ export default function TetrisGame({
       }
       drawGrid();
 
+      const isNeon = skin.name === 'Neon';
+      const neonCache = neonCacheRef.current;
+
       for (let r = 0; r < ROWS; r++)
-        for (let c = 0; c < COLS; c++)
-          skin.drawBlock(ctx, c, r, board[r][c], BLOCK);
+        for (let c = 0; c < COLS; c++) {
+          const ci = board[r][c];
+          if (!ci) continue;
+          if (isNeon && neonCache) {
+            const sprite = neonCache.get(ci);
+            if (sprite) ctx.drawImage(sprite, c * BLOCK, r * BLOCK);
+          } else {
+            skin.drawBlock(ctx, c, r, ci, BLOCK);
+          }
+        }
 
       if (!gameOver) {
         const gy = ghostY();
         for (let r = 0; r < current.shape.length; r++)
-          for (let c = 0; c < current.shape[r].length; c++)
-            if (current.shape[r][c])
-              skin.drawBlock(
-                ctx,
-                current.x + c,
-                gy + r,
-                current.shape[r][c],
-                BLOCK,
-                0.2,
-              );
+          for (let c = 0; c < current.shape[r].length; c++) {
+            const ci = current.shape[r][c];
+            if (!ci) continue;
+            if (isNeon && neonCache) {
+              const sprite = neonCache.get(ci);
+              if (sprite) {
+                ctx.globalAlpha = 0.2;
+                ctx.drawImage(
+                  sprite,
+                  (current.x + c) * BLOCK,
+                  (gy + r) * BLOCK,
+                );
+                ctx.globalAlpha = 1;
+              }
+            } else {
+              skin.drawBlock(ctx, current.x + c, gy + r, ci, BLOCK, 0.2);
+            }
+          }
 
         for (let r = 0; r < current.shape.length; r++)
-          for (let c = 0; c < current.shape[r].length; c++)
-            skin.drawBlock(
-              ctx,
-              current.x + c,
-              current.y + r,
-              current.shape[r][c],
-              BLOCK,
-            );
+          for (let c = 0; c < current.shape[r].length; c++) {
+            const ci = current.shape[r][c];
+            if (!ci) continue;
+            if (isNeon && neonCache) {
+              const sprite = neonCache.get(ci);
+              if (sprite)
+                ctx.drawImage(
+                  sprite,
+                  (current.x + c) * BLOCK,
+                  (current.y + r) * BLOCK,
+                );
+            } else {
+              skin.drawBlock(ctx, current.x + c, current.y + r, ci, BLOCK);
+            }
+          }
       }
 
       drawHUD();
@@ -504,11 +560,23 @@ export default function TetrisGame({
       }
     }
 
+    let pauseDrawn = false;
+
     function loop(ts: number) {
       const dt = Math.min(ts - lastTime, 100);
       lastTime = ts;
 
-      if (!pausedRef.current && !gameOver) {
+      if (pausedRef.current) {
+        if (!pauseDrawn) {
+          draw();
+          pauseDrawn = true;
+        }
+        animId = requestAnimationFrame(loop);
+        return;
+      }
+      pauseDrawn = false;
+
+      if (!gameOver) {
         dropAccum += dt;
         if (dropAccum >= dropInterval) {
           dropAccum = 0;
@@ -563,3 +631,5 @@ export default function TetrisGame({
     </div>
   );
 }
+
+export default React.memo(TetrisGame);

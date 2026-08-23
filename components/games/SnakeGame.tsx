@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface SnakeGameProps {
   paused: boolean;
@@ -212,9 +212,43 @@ function intervalMs(level: number): number {
   return Math.max(50, BASE_MS - (level - 1) * SPEED_REDUCTION);
 }
 
+// ── Neon cache ────────────────────────────────────────────────────────────────
+
+type NeonSegmentCache = { head: HTMLCanvasElement; body: HTMLCanvasElement };
+
+function buildNeonSegmentCache(): NeonSegmentCache {
+  function makeSprite(
+    color: string,
+    pad: number,
+    blur: number,
+  ): HTMLCanvasElement {
+    const oc = document.createElement('canvas');
+    oc.width = CELL;
+    oc.height = CELL;
+    const octx = oc.getContext('2d')!;
+    const bw = CELL - pad * 2;
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    octx.shadowBlur = blur;
+    octx.shadowColor = color;
+    octx.fillStyle = `rgba(${r},${g},${b},0.45)`;
+    octx.fillRect(pad, pad, bw, bw);
+    octx.strokeStyle = color;
+    octx.lineWidth = 1.5;
+    octx.strokeRect(pad + 0.75, pad + 0.75, bw - 1.5, bw - 1.5);
+    octx.shadowBlur = 0;
+    return oc;
+  }
+  return {
+    head: makeSprite('#00ff88', 2, 18),
+    body: makeSprite('#00cc66', 4, 10),
+  };
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SnakeGame({
+function SnakeGame({
   paused,
   skinKey = 'classic',
   onScoreChange,
@@ -225,6 +259,7 @@ export default function SnakeGame({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
   const skinRef = useRef<Skin>(SKINS[skinKey ?? 'classic'] ?? SKINS.classic);
+  const neonCacheRef = useRef<NeonSegmentCache | null>(null);
   const stateRef = useRef<GameState>(initialState());
   const prevScoreRef = useRef(0);
   const prevLevelRef = useRef(1);
@@ -239,6 +274,7 @@ export default function SnakeGame({
 
   useEffect(() => {
     skinRef.current = SKINS[skinKey ?? 'classic'] ?? SKINS.classic;
+    neonCacheRef.current = skinKey === 'neon' ? buildNeonSegmentCache() : null;
   }, [skinKey]);
 
   useEffect(() => {
@@ -283,10 +319,21 @@ export default function SnakeGame({
       }
 
       // Snake body
+      const neonCache = neonCacheRef.current;
       s.snake.forEach((seg, i) => {
         const isHead = i === 0;
         const alpha = isHead ? 1 : Math.max(0.4, 1 - i * 0.03);
-        skin.drawSegment(ctx, seg.x, seg.y, CELL, isHead, alpha);
+        if (neonCache) {
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(
+            isHead ? neonCache.head : neonCache.body,
+            seg.x * CELL,
+            seg.y * CELL,
+          );
+          ctx.globalAlpha = 1;
+        } else {
+          skin.drawSegment(ctx, seg.x, seg.y, CELL, isHead, alpha);
+        }
 
         // Head eyes
         if (isHead) {
@@ -410,8 +457,18 @@ export default function SnakeGame({
     }
 
     // ── Loop ────────────────────────────────────────────────────────────────
+    let pauseDrawn = false;
+
     function tick() {
-      if (!pausedRef.current) update();
+      if (pausedRef.current) {
+        if (!pauseDrawn) {
+          draw();
+          pauseDrawn = true;
+        }
+        return;
+      }
+      pauseDrawn = false;
+      update();
       draw();
     }
 
@@ -482,3 +539,5 @@ export default function SnakeGame({
     </div>
   );
 }
+
+export default React.memo(SnakeGame);

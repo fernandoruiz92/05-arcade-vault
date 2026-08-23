@@ -23,12 +23,15 @@ No test runner configured.
 
 Usa siempre `/frontend-design` para diseñar la interfaz de usuario.
 
+Usa `/spec-impl-game` (skill local en `.agents/skills/spec-impl-game/`) como variante de `/spec-impl` para specs de juegos: sigue el mismo flujo (Fases 1–4) y al terminar la implementación encadena automáticamente `@skin-designer` y luego `@mobile-porter` de forma secuencial.
+
 ## Agentes
 
 - **`game-planner`** (`.claude/agents/game-planner.md`) — planifica y sugiere el próximo juego a implementar. Lee el catálogo actual, evalúa candidatos por diversidad de género, factibilidad en canvas 2D y reconocimiento clásico, y mantiene una memoria persistente de sugerencias en `references/game-suggestions-todo.md`. Úsalo cuando el usuario pregunte qué juego sigue o pida ideas.
 - **`game-jam`** (`.claude/agents/game-jam.md`) — dado un tema en lenguaje natural, elige un juego arcade y genera al menos dos specs completos en `specs/game-jam/<game-id>/` siguiendo el formato de los specs 07-09. Úsalo con "game jam: <tema>" o "specs para un juego de <tema>".
 - **`skin-designer`** (`.claude/agents/skin-designer.md`) — aplica los 3 skins canónicos (classic, retro, neon) al juego indicado por el usuario. Trabaja un juego por corrida. Implementa directamente sobre `components/games/<Juego>.tsx` siguiendo el patrón de TetrisGame. Memoria en `references/game-with-themes.md`. Úsalo con "aplica skins a \<juego\>".
 - **`mobile-porter`** (`.claude/agents/mobile-porter.md`) — aplica el patrón de controles táctiles mobile (spec 10) a un juego concreto: oculta el HUD en `<md`, escala el canvas, y cabla `<MobileGamepad>` en la play-page sin tocar el componente canvas. Trabaja un juego por corrida. Úsalo con "porta \<juego\> a mobile", "añade controles táctiles a \<juego\>" o "haz \<juego\> responsive".
+- **`game-performance-booster`** (`.claude/agents/game-performance-booster.md`) — audita y corrige los 7 patrones de performance del spec 12 (constantes de módulo, saltar draw en pausa, timers acotados, lookups O(1), React.memo, HUD a refs, cache neon offscreen) en el juego indicado. Trabaja un juego por corrida; modifica `components/games/<Juego>.tsx` y `app/games/<juego>/play/page.tsx`. Úsalo con "revisa performance de \<juego\>", "optimiza \<juego\>" o "boostea performance de \<juego\>".
 
 ## Architecture
 

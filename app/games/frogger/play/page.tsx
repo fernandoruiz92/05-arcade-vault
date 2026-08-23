@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import MobileGamepad from '@/components/MobileGamepad';
 
-const SnakeGame = dynamic(() => import('@/components/games/SnakeGame'), {
+const FroggerGame = dynamic(() => import('@/components/games/FroggerGame'), {
   ssr: false,
 });
 
@@ -18,16 +18,16 @@ const SKIN_OPTIONS = [
 
 function getSavedSkin() {
   if (typeof window === 'undefined') return 'classic';
-  return localStorage.getItem('snake-skin') ?? 'classic';
+  return localStorage.getItem('frogger-skin') ?? 'classic';
 }
 
-export default function SnakePlay() {
+export default function FroggerPlay() {
   const scoreRef = useRef(0);
+  const livesRef = useRef(3);
   const levelRef = useRef(1);
-  const livesRef = useRef(1);
   const scoreEl = useRef<HTMLSpanElement>(null);
-  const levelEl = useRef<HTMLSpanElement>(null);
   const livesEl = useRef<HTMLSpanElement>(null);
+  const levelEl = useRef<HTMLSpanElement>(null);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [name, setName] = useState('INVITADO');
@@ -41,7 +41,7 @@ export default function SnakePlay() {
 
   function changeSkin(key: string) {
     setSkinKey(key);
-    localStorage.setItem('snake-skin', key);
+    localStorage.setItem('frogger-skin', key);
   }
 
   const handleScoreChange = useCallback((s: number) => {
@@ -56,7 +56,14 @@ export default function SnakePlay() {
   }, []);
   const handleLivesChange = useCallback((l: number) => {
     livesRef.current = l;
-    if (livesEl.current) livesEl.current.textContent = l > 0 ? '♥' : '—';
+    if (livesEl.current) {
+      livesEl.current.innerHTML = Array.from({ length: 3 })
+        .map(
+          (_, i) =>
+            `<span style="color:${i < l ? 'var(--green)' : 'var(--ink-dim)'}">♥</span>`,
+        )
+        .join('');
+    }
   }, []);
   const handleGameOver = useCallback((finalScore: number) => {
     scoreRef.current = finalScore;
@@ -74,11 +81,14 @@ export default function SnakePlay() {
 
   function restart() {
     scoreRef.current = 0;
+    livesRef.current = 3;
     levelRef.current = 1;
-    livesRef.current = 1;
     if (scoreEl.current) scoreEl.current.textContent = '0';
+    if (livesEl.current)
+      livesEl.current.innerHTML = Array.from({ length: 3 })
+        .map(() => `<span style="color:var(--green)">♥</span>`)
+        .join('');
     if (levelEl.current) levelEl.current.textContent = '01';
-    if (livesEl.current) livesEl.current.textContent = '♥';
     setPaused(false);
     setOver(false);
     setSaved(false);
@@ -108,7 +118,15 @@ export default function SnakePlay() {
             <div className="hud-stat lives">
               <div className="l">Vidas</div>
               <div className="v">
-                <span ref={livesEl}>♥</span>
+                <span
+                  ref={livesEl}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      '<span style="color:var(--green)">♥</span>' +
+                      '<span style="color:var(--green)">♥</span>' +
+                      '<span style="color:var(--green)">♥</span>',
+                  }}
+                />
               </div>
             </div>
             <div className="hud-stat level">
@@ -149,7 +167,7 @@ export default function SnakePlay() {
             <button className="btn magenta" onClick={() => setOver(true)}>
               FIN
             </button>
-            <Link href="/games/snake" className="btn ghost">
+            <Link href="/games/frogger" className="btn ghost">
               SALIR
             </Link>
           </div>
@@ -159,9 +177,9 @@ export default function SnakePlay() {
       <div className="crt w-full max-w-[800px] mx-auto">
         <div
           className="crt-screen crt-screen--scale-canvas"
-          style={{ aspectRatio: '1/1' }}
+          style={{ aspectRatio: '8 / 7' }}
         >
-          <SnakeGame
+          <FroggerGame
             key={gameKey}
             paused={paused}
             skinKey={skinKey}
@@ -196,7 +214,7 @@ export default function SnakePlay() {
         </div>
         <div className="crt-bottom">
           <span className="led">SEÑAL OK</span>
-          <span>SNAKE · CRT-83 · 60 HZ</span>
+          <span>FROGGER · CRT-83 · 60 HZ</span>
           <span>CARGA · 1MB</span>
         </div>
       </div>
@@ -207,7 +225,7 @@ export default function SnakePlay() {
         onPauseToggle={() => setPaused((p) => !p)}
         skin={skinKey}
         onSkinChange={changeSkin}
-        backHref="/games/snake"
+        backHref="/games/frogger"
       />
 
       {over && (
@@ -234,7 +252,7 @@ export default function SnakePlay() {
                     localStorage.setItem('av_player_name', name);
                     const supabase = createClient();
                     await supabase.from('scores').insert({
-                      game_id: 'snake',
+                      game_id: 'frogger',
                       player_name: name,
                       score: scoreRef.current,
                       user_id: null,
@@ -251,7 +269,7 @@ export default function SnakePlay() {
               <button className="btn" onClick={restart}>
                 JUGAR DE NUEVO
               </button>
-              <Link href="/games/snake#leaderboard" className="btn cyan">
+              <Link href="/games/frogger#leaderboard" className="btn cyan">
                 VER LEADERBOARD
               </Link>
               <Link href="/games" className="btn magenta">

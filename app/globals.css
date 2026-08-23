@@ -836,6 +836,29 @@ a {
   text-shadow: 0 0 8px var(--yellow);
 }
 
+.cover-frogger {
+  background: linear-gradient(180deg, #001a00, #0a1a0a);
+}
+.cover-frogger::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(50, 205, 50, 0.12) 0 20px,
+      transparent 20px 40px
+    ),
+    radial-gradient(circle at 50% 58%, #84cc16 0 12px, transparent 13px),
+    linear-gradient(
+      180deg,
+      transparent 40%,
+      rgba(0, 100, 0, 0.3) 40% 60%,
+      transparent 60%
+    );
+  filter: drop-shadow(0 0 8px rgba(132, 204, 22, 0.5));
+}
+
 .cover-rana {
   background: linear-gradient(180deg, #001f2a, #0a0a18);
 }

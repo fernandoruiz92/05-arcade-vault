@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface AsteroidsGameProps {
   paused: boolean;
@@ -84,7 +84,7 @@ const SKINS: Record<string, Skin> = {
   },
 };
 
-export default function AsteroidsGame({
+function AsteroidsGame({
   paused,
   skinKey = 'classic',
   onScoreChange,
@@ -573,12 +573,22 @@ export default function AsteroidsGame({
     // ── Loop ─────────────────────────────────────────────────────────────────
     let rafId: number;
     let lastTime: number | null = null;
+    let pauseDrawn = false;
 
     function loop(ts: number) {
       const dt = lastTime === null ? 0 : Math.min((ts - lastTime) / 1000, 0.05);
       lastTime = ts;
 
-      if (!pausedRef.current) update(dt);
+      if (pausedRef.current) {
+        if (!pauseDrawn) {
+          draw();
+          pauseDrawn = true;
+        }
+        rafId = requestAnimationFrame(loop);
+        return;
+      }
+      pauseDrawn = false;
+      update(dt);
       draw();
 
       // Notify React of state changes
@@ -626,3 +636,5 @@ export default function AsteroidsGame({
     />
   );
 }
+
+export default React.memo(AsteroidsGame);
