@@ -10,14 +10,14 @@ export default function GamePlayer({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { user } = useUser();
+  const { username } = useUser();
 
   const [score, setScore] = useState(0);
   const [lives] = useState(3);
   const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [name, setName] = useState(user ?? 'INVITADO');
+  const [name, setName] = useState('INVITADO');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function GamePlayer({
     setPaused(false);
     setOver(false);
     setSaved(false);
-    setName(user ?? 'INVITADO');
+    setName(username ?? 'INVITADO');
   }
 
   return (

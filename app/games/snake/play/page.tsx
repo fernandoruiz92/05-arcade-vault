@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/app/context/UserContext';
 import MobileGamepad from '@/components/MobileGamepad';
 
 const SnakeGame = dynamic(() => import('@/components/games/SnakeGame'), {
@@ -22,6 +23,7 @@ function getSavedSkin() {
 }
 
 export default function SnakePlay() {
+  const { user, username } = useUser();
   const scoreRef = useRef(0);
   const levelRef = useRef(1);
   const livesRef = useRef(1);
@@ -67,10 +69,14 @@ export default function SnakePlay() {
 
   useEffect(() => {
     if (over) {
+      if (username) {
+        setName(username);
+        return;
+      }
       const saved = localStorage.getItem('av_player_name');
       if (saved) setName(saved);
     }
-  }, [over]);
+  }, [over, username]);
 
   function restart() {
     scoreRef.current = 0;
@@ -82,7 +88,7 @@ export default function SnakePlay() {
     setPaused(false);
     setOver(false);
     setSaved(false);
-    setName('INVITADO');
+    setName(username ?? 'INVITADO');
     setGameKey((k) => k + 1);
   }
 
@@ -237,7 +243,7 @@ export default function SnakePlay() {
                       game_id: 'snake',
                       player_name: name,
                       score: scoreRef.current,
-                      user_id: null,
+                      user_id: user?.id ?? null,
                     });
                   }}
                 >

@@ -24,7 +24,7 @@ function getSavedSkin() {
 }
 
 export default function AsteroidsPlay() {
-  const { user } = useUser();
+  const { user, username } = useUser();
 
   const scoreRef = useRef(0);
   const livesRef = useRef(3);
@@ -34,7 +34,7 @@ export default function AsteroidsPlay() {
   const levelEl = useRef<HTMLSpanElement>(null);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [name, setName] = useState(user ?? 'INVITADO');
+  const [name, setName] = useState('INVITADO');
   const [saved, setSaved] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [skinKey, setSkinKey] = useState('classic');
@@ -72,10 +72,14 @@ export default function AsteroidsPlay() {
 
   useEffect(() => {
     if (over) {
+      if (username) {
+        setName(username);
+        return;
+      }
       const saved = localStorage.getItem('av_player_name');
       if (saved) setName(saved);
     }
-  }, [over]);
+  }, [over, username]);
 
   function restart() {
     scoreRef.current = 0;
@@ -87,7 +91,7 @@ export default function AsteroidsPlay() {
     setPaused(false);
     setOver(false);
     setSaved(false);
-    setName(user ?? 'INVITADO');
+    setName(username ?? 'INVITADO');
     setGameKey((k) => k + 1);
   }
 
@@ -245,7 +249,7 @@ export default function AsteroidsPlay() {
                       game_id: 'asteroids',
                       player_name: name,
                       score: scoreRef.current,
-                      user_id: null,
+                      user_id: user?.id ?? null,
                     });
                   }}
                 >
